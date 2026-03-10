@@ -1,56 +1,167 @@
-# DexInstructionRunner
+DexInstructionRunner
 
-> **Disclaimer:**  
-> This project is provided *as‑is* and is intended only as a sample application to help you get started with building your own TeamViewer DEX instruction runner.  
-> No warranties, guarantees, or support are provided.
+Disclaimer:
+This project is provided as-is and is intended only as a sample application to help you get started with building your own TeamViewer DEX instruction runner.
+No warranties, guarantees, or support are provided.
 
-A minimal, focused desktop utility to **browse, run, and monitor TeamViewer DEX instructions** against one or more endpoints. Designed for simplicity, speed, and “operator‑first” workflows.
+A focused desktop utility to browse, run, and monitor TeamViewer DEX instructions against explicitly selected endpoints.
+The application emphasizes safe targeting, fast execution, and operator-friendly workflows.
 
-> **What is TeamViewer DEX?**  
-> TeamViewer DEX provides proactive endpoint monitoring and automated remediation (digital employee experience). This utility focuses on the *instruction* execution slice—list, parameterize, run, and review results. [1](https://www.teamviewer.com/en/products/dex/)
+What is TeamViewer DEX?
+TeamViewer DEX provides proactive endpoint monitoring and automated remediation (digital employee experience). This utility focuses on the instruction execution workflow—discover, parameterize, run, and review results. 1
 
 <img src="Images/InstructionRunnerDetailTab.png" width="50%" />
----
+Features
+🔎 Instruction discovery
 
-## Features
+Load instructions (and packs) directly from your DEX tenant.
 
-- 🔎 **Instruction discovery** — Load instructions (and packs) from your DEX tenant; filter by name, tag, category.
-- 🧩 **Parameter editor** — Auto‑render typed parameters with validation + sensible defaults.
-- 🖥️ **Target selection** — Choose device or  list up to 10 fqdn's.
-- ▶️ **Run & monitor** — Fire instructions, stream progress, and show success/error per target.  
-- 🧾 **Results export** — Save results to CSV, TSV or XLSX;  
+Filter instructions by:
 
-> For broader DEX content (packs, instructions, SCALE code) and how organizations structure it, see the TeamViewer DEX/Exchange content model.)
+name
 
----
+category
 
-## How it Works (High level)
+tags
 
-1. **Connect** — The app authenticates to your DEX endpoint using your interactive credentials.  
-2. **Load content** — Instructions are retrieved from the endpoint and cached for the session.  
-3. **Parameterize** — When you select an instruction, a typed form is generated for parameters if they exist or populate a dropdown for a list of options.  
-4. **Target** — Pick devices (or paste a list).  
-5. **Run** — The app dispatches runs and tracks per‑target state until completion.  
-6. **Review** — Summaries and raw payloads are available for export/audit.
+description
 
+This allows quick discovery of relevant instructions in large environments.
 
----
+🧩 Dynamic parameter editor
 
-## Getting Started
+When an instruction is selected, the application automatically generates a typed parameter form.
 
-### Prerequisites
+Features include:
 
-- **OS:** Windows/macOS  
-- **Runtime:** **.NET 8 SDK** (for build) and the platform runtime for your chosen UI framework *(Avalonia or WPF; this project uses Avalonia by default — adjust if yours differs).*  
+automatic parameter detection
 
+dropdowns for enumerated values
 
-### Clone & Build
+validation for required fields
 
-```bash
+default value population
+
+This allows instructions to be run without manually constructing payloads.
+
+🖥️ Safe FQDN-based targeting
+
+Devices are primarily targeted using explicit FQDN selection.
+
+Capabilities include:
+
+FQDN device search
+
+Primary user search
+
+controlled device selection
+
+maximum of 10 devices per execution
+
+This model helps prevent accidental large-scale instruction execution.
+
+▶️ Run & monitor instructions
+
+Instructions can be executed directly from the UI.
+
+The runner provides:
+
+real-time execution status
+
+per-device success or failure state
+
+error visibility and diagnostics
+
+Execution progress is streamed back to the interface for immediate feedback.
+
+🧾 Results export
+
+Instruction results can be exported for analysis or reporting.
+
+Supported formats:
+
+CSV
+
+TSV
+
+XLSX
+
+Exports can be configured with row limits and default formats from the settings panel.
+
+⚙️ Built-in configuration panel
+
+The application includes a settings flyout for runtime configuration.
+
+Available options include:
+
+dev token reuse
+
+API troubleshooting logging
+
+authentication refresh threshold
+
+result display limits
+
+export row limits
+
+default export format
+
+platform configuration
+
+🌐 Platform management
+
+Multiple DEX platforms can be configured directly within the application.
+
+Features include:
+
+platform aliases
+
+default platform selection
+
+secure platform URL handling
+
+inline platform editing
+
+This allows users to quickly switch between environments.
+
+How it Works (High Level)
+
+Connect
+The application authenticates to the DEX platform using interactive credentials.
+
+Load Instructions
+Available instructions are retrieved from the platform and cached for the session.
+
+Parameterize
+When an instruction is selected, a typed parameter form is generated automatically.
+
+Select Targets
+Devices are selected using FQDN search or explicit device selection.
+
+Run Instruction
+The application dispatches the instruction and tracks execution status per device.
+
+Review Results
+Results are displayed in the UI and can be exported for further analysis.
+
+Getting Started
+Prerequisites
+
+OS: Windows or macOS
+
+Runtime: .NET 8 SDK (for build)
+
+Framework: Avalonia UI (cross-platform desktop UI)
+
+Clone & Build
 git clone https://github.com/teamviewer/DexInstructionRunner.git
 cd DexInstructionRunner
-# If Avalonia:
+
 dotnet restore
 dotnet build -c Release
-# Optional: publish self-contained binary (adjust RID)
+
+Optional publish:
+
 dotnet publish -c Release -r win-x64 --self-contained false
+
+Adjust the runtime identifier for your platform if needed.
