@@ -1,0 +1,1028 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DexInstructionRunner.MainWindow"
+        x:Name="RootWindow"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
+        Title="DexInstructionRunner" Width="1200" Height="900">
+	<Window.Styles>
+		<Style Selector="FlyoutPresenter.wide-flyout">
+			<Setter Property="Width" Value="1000"/>
+			<Setter Property="MinWidth" Value="900"/>
+			<Setter Property="MaxWidth" Value="1200"/>
+		</Style>
+	</Window.Styles>
+
+	<Window.Resources>
+		<Flyout x:Key="InstrRunFilterFlyout" Placement="Bottom" ShowMode="Standard" FlyoutPresenterClasses="wide-flyout">
+			<Grid Width="1000" MinWidth="900" MaxWidth="1100">
+				<Border Padding="10" BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderLowBrush}">
+					<StackPanel Spacing="8">
+						<StackPanel Spacing="2">
+							<TextBlock Text="Run Result Filter (Server-side)" FontWeight="Bold" />
+							<TextBlock Text="Type values for any columns you want to filter. Click Set to apply." FontSize="11" Opacity="0.8" />
+						</StackPanel>
+
+						<Border Padding="6" CornerRadius="6" BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderLowBrush}" Background="{DynamicResource TextBoxBackgroundBrush}">
+							<ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" MaxHeight="360" Padding="0,0,6,0">
+								<ItemsControl ItemsSource="{Binding ElementName=RootWindow, Path=InstrRunFilterRows}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Grid Margin="0,3" ColumnDefinitions="260,170,*" ColumnSpacing="8">
+												<TextBlock Grid.Column="0" Text="{Binding Column}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+												<ComboBox Grid.Column="1" ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding Operator, Mode=TwoWay}" />
+												<TextBox Grid.Column="2" Watermark="{Binding Column}" Text="{Binding Value, Mode=TwoWay}" />
+											</Grid>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</Border>
+
+						<Separator />
+
+						<Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+							<Button Grid.Column="0" x:Name="InstrRunFilterClearButton" Content="Clear" Width="90" Click="InstrRunFilterClear_Click" />
+							<Button Grid.Column="1" x:Name="InstrRunFilterCancelButton" Content="Cancel" Width="90" Click="InstrRunFilterCancel_Click" />
+							<Button Grid.Column="2" x:Name="InstrRunFilterApplyButton" Content="Set" Width="90" Click="InstrRunFilterApply_Click" />
+						</Grid>
+					</StackPanel>
+				</Border>
+			</Grid>
+		</Flyout>
+
+		<Flyout x:Key="FqdnRunFilterFlyout" Placement="Bottom" ShowMode="Standard" FlyoutPresenterClasses="wide-flyout">
+			<Grid Width="1100" MinWidth="900" MaxWidth="1200">
+				<Border Padding="10" BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderLowBrush}">
+					<StackPanel Spacing="8">
+						<StackPanel Spacing="2">
+							<TextBlock Text="Run Result Filter (Server-side)" FontWeight="Bold" />
+							<TextBlock Text="Type values for any columns you want to filter. Click Set to apply." FontSize="11" Opacity="0.8" />
+						</StackPanel>
+
+						<Border Padding="6" CornerRadius="6" BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderLowBrush}" Background="{DynamicResource TextBoxBackgroundBrush}">
+							<ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" MaxHeight="360" Padding="0,0,6,0">
+								<ItemsControl ItemsSource="{Binding ElementName=RootWindow, Path=FqdnRunFilterRows}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Grid Margin="0,3" ColumnDefinitions="260,170,*" ColumnSpacing="8">
+												<TextBlock Grid.Column="0" Text="{Binding Column}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+												<ComboBox Grid.Column="1" ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding Operator, Mode=TwoWay}" />
+												<TextBox Grid.Column="2" Watermark="{Binding Column}" Text="{Binding Value, Mode=TwoWay}" />
+											</Grid>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</Border>
+
+						<Separator />
+
+						<Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+							<Button Grid.Column="0" x:Name="FqdnRunFilterClearButton" Content="Clear" Width="90" />
+							<Button Grid.Column="1" x:Name="FqdnRunFilterCancelButton" Content="Cancel" Width="90" />
+							<Button Grid.Column="2" x:Name="FqdnRunFilterApplyButton" Content="Set" Width="90" />
+						</Grid>
+					</StackPanel>
+				</Border>
+			</Grid>
+		</Flyout>
+	</Window.Resources>
+
+	<DockPanel LastChildFill="True">
+		<StackPanel Orientation="Horizontal"
+					DockPanel.Dock="Top"
+					HorizontalAlignment="Right"
+					Spacing="20"
+					Margin="0,6,12,0">
+
+			<StackPanel Orientation="Horizontal"
+						Spacing="4"
+						Margin="0,2,0,0"
+						x:Name="ExportStatusPanel"
+						IsVisible="False">
+				<ProgressBar x:Name="ExportProgressBar"
+							 Width="200"
+							 Height="14"
+							 Minimum="0"
+							 Maximum="100"
+							 Value="0" />
+				<TextBlock x:Name="ExportProgressLabel"
+						   VerticalAlignment="Center"
+						   FontSize="11"
+						   FontWeight="Bold"
+						   Foreground="LightGreen"
+						   Margin="6,0,0,0"
+						   Text="Exporting..." />
+				<Button x:Name="CancelExportButton"
+						Content="✖"
+						Margin="4,0,0,0"
+						ToolTip.Tip="Cancel export"
+						VerticalAlignment="Center"
+						Click="OnCancelExportClicked" />
+			</StackPanel>
+
+			<TextBlock x:Name="AuthStatusText"
+					   Text="🔴 Not Authenticated"
+					   Foreground="{DynamicResource ErrorBrush}"
+					   FontWeight="Bold"
+					   FontSize="14" />
+			<TextBlock x:Name="TokenTimerText"
+					   Margin="6,0,0,0"
+					   VerticalAlignment="Center"
+					   FontSize="12"
+					   Foreground="LightGreen"
+					   Text="🕒 123 min left"
+					   IsVisible="False" />
+			<Button x:Name="NotificationAlertButton"
+					ToolTip.Tip="Pending approvals"
+					Content="🔔"
+					IsVisible="False"
+					Click="OnNotificationAlertClicked"
+					VerticalAlignment="Center"
+					FontSize="16"
+					Background="Transparent"
+					BorderBrush="{x:Null}" />
+			<Button x:Name="SettingsButton"
+					ToolTip.Tip="Settings"
+					Content="⚙"
+					Click="OnSettingsClicked"
+					VerticalAlignment="Center"
+					FontSize="16"
+					Background="Transparent"
+					BorderBrush="{x:Null}" />
+			<StackPanel x:Name="TopLoadingPanel"
+						Orientation="Horizontal"
+						Spacing="6"
+						VerticalAlignment="Center"
+						IsVisible="False">
+				<ProgressBar Width="80" Height="10" IsIndeterminate="True" />
+				<TextBlock Text="Fetching results..." FontStyle="Italic" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+			</StackPanel>
+		</StackPanel>
+
+		<Grid ColumnDefinitions="*,Auto" RowDefinitions="*">
+
+			<Border x:Name="SettingsFlyoutBorder"
+		Grid.Column="0"
+		Width="420"
+		HorizontalAlignment="Right"
+		VerticalAlignment="Stretch"
+		Background="{DynamicResource SettingsFlyoutBackgroundBrush}"
+		Padding="12"
+		IsVisible="False"
+		ZIndex="10"
+		BorderBrush="{DynamicResource ThemeAccentColor}"
+		BorderThickness="1">
+
+				<ScrollViewer VerticalScrollBarVisibility="Auto"
+							  Background="{DynamicResource SettingsFlyoutBackgroundBrush}">
+					<StackPanel x:Name="SettingsFlyoutPanel"
+								Spacing="10"
+								Background="{DynamicResource SettingsFlyoutBackgroundBrush}">
+						<TextBlock Text="⚙ Settings" FontWeight="Bold" FontSize="16" />
+						<Separator />
+						<CheckBox x:Name="EnableDevTokenReuseCheckBox" Content="Enable Dev Token Reuse" IsVisible="False" />
+						<CheckBox x:Name="EnableApiTroubleshootingLogCheckBox" Content="Enable API Troubleshooting Log" IsVisible="False" />
+						<CheckBox x:Name="ShowLogOnStartupCheckBox" Content="Show Log on Startup" />
+						<CheckBox x:Name="AllowAllDevicesInManagementGroupDropdownCheckBox" Content="Allow 'All Devices' in Management Group dropdown" IsVisible="False" />
+
+						<!--StackPanel Spacing="4">
+							<TextBlock Text="Reauth threshold (minutes)" />
+							<TextBox x:Name="ReauthMinutesTextBox" Width="120" />
+						</StackPanel-->
+
+						<StackPanel Spacing="4">
+							<TextBlock Text="Result display limit" />
+							<TextBox x:Name="ResultDisplayLimitTextBox" Width="120" />
+						</StackPanel>
+
+						<StackPanel Spacing="4">
+							<TextBlock Text="Export max rows" />
+							<TextBox x:Name="ExportMaxRowsTextBox" Width="120" />
+						</StackPanel>
+
+						<StackPanel Spacing="4">
+							<TextBlock Text="Default export format" />
+							<ComboBox x:Name="DefaultExportFormatComboBox" Width="140">
+								<ComboBoxItem Content="csv" />
+								<ComboBoxItem Content="tsv" />
+								<ComboBoxItem Content="xlsx" />
+							</ComboBox>
+						</StackPanel>
+
+						<TextBlock Text="Platforms" FontWeight="Bold" Margin="0,12,0,6"/>
+
+						<Border Background="{DynamicResource SettingsFlyoutPanelBrush}" Padding="10" CornerRadius="6">
+							<StackPanel Spacing="8">
+								<dg:DataGrid x:Name="PlatformsDataGrid"
+											 Height="260"
+											 AutoGenerateColumns="False"
+											 CanUserReorderColumns="False"
+											 CanUserResizeColumns="True"
+											 IsReadOnly="False"
+											 GridLinesVisibility="All"
+											 HeadersVisibility="All"
+											 Margin="0,6,0,0"
+											 SelectionMode="Single">
+									<dg:DataGrid.Columns>
+										<dg:DataGridTemplateColumn Header="Def" Width="Auto" IsReadOnly="True">
+											<dg:DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<TextBlock Text="{Binding DefaultMarker}"
+															   HorizontalAlignment="Center"
+															   VerticalAlignment="Center"
+															   FontWeight="Bold"
+															   FontSize="16"
+															   Margin="6,0"/>
+												</DataTemplate>
+											</dg:DataGridTemplateColumn.CellTemplate>
+										</dg:DataGridTemplateColumn>
+
+										<dg:DataGridTemplateColumn Header="Alias" Width="180">
+											<dg:DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<TextBox Text="{Binding Alias, Mode=TwoWay}" Watermark="Alias" />
+												</DataTemplate>
+											</dg:DataGridTemplateColumn.CellTemplate>
+										</dg:DataGridTemplateColumn>
+
+										<dg:DataGridTemplateColumn Header="Platform URI" Width="*">
+											<dg:DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<TextBox Text="{Binding UrlEdit, Mode=TwoWay}"
+															 PasswordChar="•"
+															 Watermark="{Binding ObfuscatedUrl}" />
+												</DataTemplate>
+											</dg:DataGridTemplateColumn.CellTemplate>
+										</dg:DataGridTemplateColumn>
+									</dg:DataGrid.Columns>
+								</dg:DataGrid>
+
+								<StackPanel Orientation="Horizontal" Spacing="8">
+									<Button x:Name="SavePlatformsInlineButton" Content="Save Platforms" Click="OnSavePlatformsInlineClicked" />
+									<Button x:Name="SetDefaultPlatformInlineButton" Content="Set Default" Click="OnSetDefaultPlatformInlineClicked" />
+									<Button x:Name="RemovePlatformsInlineButton" Content="Remove" Click="OnRemovePlatformsInlineClicked" />
+									<TextBlock x:Name="PlatformsInlineStatusText" Opacity="0.8" VerticalAlignment="Center" />
+								</StackPanel>
+							</StackPanel>
+						</Border>
+
+						<StackPanel Orientation="Horizontal" Spacing="3">
+							<Button Content="Save" Width="90" Click="OnSaveSettingsClicked"/>
+							<Button Content="Close" Width="90" Click="OnCloseSettingsClicked"/>
+						</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
+			</Border>
+
+			<TabControl x:Name="MainTabControl" Grid.Column="0" Margin="10" SelectedIndex="0">
+				<TabItem Header="Instruction Detail" IsTabStop="True">
+					<ScrollViewer VerticalScrollBarVisibility="Auto">
+						<StackPanel Margin="10" Spacing="10">
+							<ListBox x:Name="InstructionListBox" Height="140" SelectionMode="Single" />
+							<TextBox x:Name="SearchBox" TabIndex="8" Watermark="Search instructions..." />
+							<TextBlock x:Name="InstructionDescription" FontStyle="Italic" FontSize="13" TextWrapping="Wrap" MaxHeight="60" />
+							<StackPanel x:Name="ParametersPanel" Spacing="6" />
+
+							<StackPanel Orientation="Horizontal" Spacing="40">
+								<StackPanel Orientation="Vertical" Spacing="2">
+									<TextBlock Text="Instruction TTL" />
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<ComboBox x:Name="InstructionTtlUnitDropdown" TabIndex="9" Width="100" ToolTip.Tip="Select unit">
+											<ComboBoxItem Content="minutes" />
+											<ComboBoxItem Content="hours" />
+											<ComboBoxItem Content="days" />
+										</ComboBox>
+										<TextBox x:Name="InstructionTtlBox" TabIndex="10" Width="80" ToolTip.Tip="Minutes: 10â€“10080, Hours: 1â€“168, Days: 1â€“7"/>
+									</StackPanel>
+								</StackPanel>
+
+								<StackPanel Orientation="Vertical" Spacing="2">
+									<TextBlock Text="Response TTL" />
+									<StackPanel Orientation="Horizontal" Spacing="6">
+										<ComboBox x:Name="ResponseTtlUnitDropdown" TabIndex="11" Width="100" ToolTip.Tip="Select unit">
+											<ComboBoxItem Content="minutes" />
+											<ComboBoxItem Content="hours" />
+											<ComboBoxItem Content="days" />
+										</ComboBox>
+										<TextBox x:Name="ResponseTtlBox" TabIndex="12" Width="80" ToolTip.Tip="Minutes: 10–10080, Hours: 1–168, Days: 1–7"/>
+									</StackPanel>
+								</StackPanel>
+							</StackPanel>
+
+							<Grid Margin="0,10,0,10"
+		  ColumnDefinitions="Auto,12,200,24,*"
+		  RowDefinitions="Auto">
+								<TextBlock Grid.Column="0"
+										   Text="Targeting Mode:"
+										   VerticalAlignment="Center"/>
+
+								<ComboBox x:Name="TargetingModeComboBox"
+										  Grid.Column="2"
+										  TabIndex="13"
+										  Width="200"
+										  HorizontalAlignment="Left"
+										  VerticalAlignment="Center" />
+
+								<StackPanel Grid.Column="4"
+											Orientation="Vertical"
+											Spacing="4"
+											VerticalAlignment="Center">
+									<StackPanel Orientation="Horizontal" Spacing="16">
+										<TextBlock x:Name="EstimatedCountLabel"
+												   Text="Estimated: ?"
+												   Foreground="{DynamicResource InstructionEstimateBrush}"
+												   FontWeight="Bold"
+												   FontSize="13"
+												   VerticalAlignment="Center"
+												   ToolTip.Tip="Estimated number of targeted devices" />
+
+										<TextBlock x:Name="OnlineCountLabel"
+												   Text="Online: ?"
+												   Foreground="{DynamicResource SuccessBrush}"
+												   FontWeight="Bold"
+												   FontSize="13"
+												   VerticalAlignment="Center"
+												   ToolTip.Tip="Number of online targeted devices" />
+
+										<TextBlock x:Name="OfflineCountLabel"
+												   Text="Offline: ?"
+												   Foreground="OrangeRed"
+												   FontWeight="Bold"
+												   FontSize="13"
+												   VerticalAlignment="Center"
+												   ToolTip.Tip="Number of offline targeted devices" />
+
+										<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+											<TextBlock x:Name="BreakdownLabel"
+													   Text="📊 OS Type"
+													   FontSize="12"
+													   VerticalAlignment="Center"
+													   Margin="0,0,4,0"/>
+											<ToggleSwitch x:Name="BreakdownModeToggle"
+														  Width="60"
+														  IsChecked="True"
+														  OnContent=""
+														  OffContent=""
+														  Content=""
+														  ToolTip.Tip="Toggle between OS Type and Device Type breakdowns"/>
+											<TextBlock x:Name="PreviewLoadingLabel"
+													   Text="⏳ Updating results..."
+													   Foreground="DarkOrange"
+													   FontWeight="Bold"
+													   FontSize="12"
+													   Margin="4,0,0,4"
+													   IsVisible="False" />
+										</StackPanel>
+									</StackPanel>
+
+									<StackPanel x:Name="BreakdownPanel" Margin="0,6,0,0"/>
+								</StackPanel>
+							</Grid>
+
+							<StackPanel x:Name="MgmtGroupPanel" Orientation="Horizontal" Spacing="8" IsVisible="False">
+								<ComboBox x:Name="ManagementGroupComboBox" TabIndex="15" Width="300" PlaceholderText="Select a management group..." />
+								<Button x:Name="SetDefaultMGButton" TabIndex="16" Content="Set as Default MG" Width="150" Click="SetDefaultMGButton_Click" />
+								
+							</StackPanel>
+
+
+							<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+								<TextBlock Text="Platform:" VerticalAlignment="Center" />
+								<ComboBox x:Name="PlatformUrlDropdown" TabIndex="19" Width="220" />
+								<Button x:Name="LoginButton" TabIndex="26" Content="🔐 Login" Width="120" Margin="12,0,0,0" />
+								<Button x:Name="LogoutButton" TabIndex="27" Content="Logout" Width="100" Click="LogoutButton_Click" Margin="5,0,0,0"/>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal" Spacing="12">
+								<Button x:Name="RunButton"
+										TabIndex="25"
+										Content="🚀 Run Instruction"
+										Width="160"
+										IsEnabled="False"
+										Background="{DynamicResource SystemAccentColor}"
+										Foreground="{DynamicResource TextBoxForegroundBrush}"
+										FontWeight="Bold" />
+
+								<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="6,0,0,0">
+									<TextBlock Text="Run:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+									<RadioButton x:Name="RunScopeAllRadio" GroupName="RunScope" Content="All" IsChecked="True" VerticalAlignment="Center" Checked="RunScopeAllRadio_Checked"/>
+									<RadioButton x:Name="RunScopeFilteredRadio" GroupName="RunScope" Content="Filtered" VerticalAlignment="Center" Checked="RunScopeFilteredRadio_Checked"/>
+								</StackPanel>
+
+								<Button x:Name="InstrRunFilterButton"
+										Content="Filter…"
+										Width="90"
+										IsEnabled="False"
+										Click="InstrRunFilterButton_Click"
+										FlyoutBase.AttachedFlyout="{StaticResource InstrRunFilterFlyout}" />
+
+								<TextBlock x:Name="InstrFilterSummaryText"
+										   VerticalAlignment="Center"
+										   Margin="6,0,0,0"
+										   Text="No run filter" />
+								<Button x:Name="InstrFilterClearButton"
+										Content="Clear"
+										IsVisible="False"
+										Margin="6,0,0,0"
+										Click="InstrRunFilterClear_Click" />
+
+								<StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+									<TextBlock Text="Show Logs" VerticalAlignment="Center"/>
+									<ToggleSwitch x:Name="ShowLogToggle" TabIndex="28"
+												  IsChecked="False"
+												  Width="80" />
+									<Button Content="Clear Log" Width="110" Click="ClearLogButton_Click" />
+								</StackPanel>
+							</StackPanel>
+
+							<StackPanel x:Name="LogSection" Spacing="4" IsVisible="False">
+								<TextBox x:Name="LogTextBox"
+										 TabIndex="30"
+										 AcceptsReturn="True"
+										 IsReadOnly="True"
+										 Height="160"
+										 TextWrapping="Wrap"
+										 GotFocus="LogTextBox_GotFocus"
+										 PointerEntered="LogTextBox_PointerEntered" />
+
+								<TextBlock x:Name="StatusLabel"
+										   FontWeight="Bold"
+										   FontSize="14" />
+							</StackPanel>
+							<!-- FQDN Targeting -->
+							<Grid x:Name="FqdnPanel"
+		  IsVisible="True"
+		  RowDefinitions="Auto,Auto,*,Auto"
+		  RowSpacing="10">
+
+								<Border Grid.Row="0"
+										Background="{DynamicResource ThemeNotificationBackground}"
+										BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+										BorderThickness="1"
+										CornerRadius="6"
+										Padding="10">
+									<Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
+
+										<!-- Search box -->
+										<TextBox x:Name="FqdnTextBox"
+												 Grid.Column="0"
+												 TabIndex="17"
+												 Height="32"
+												 Width="280"
+												 MaxWidth="320"
+												 VerticalAlignment="Center"
+												 Watermark="Search by FQDN or Primary User..." />
+
+										<!-- Add Selected button -->
+										<Button x:Name="AddSelectedFqdnButton"
+												Grid.Column="1"
+												Content="Add Selected"
+												Width="120"
+												Height="32"
+												VerticalAlignment="Center"
+												IsVisible="False"
+												Click="OnAddSelectedFqdnManagerResultClicked" />
+
+										<!-- Search mode radios -->
+										<StackPanel x:Name="SearchByModePanel"
+													Grid.Column="2"
+													Orientation="Horizontal"
+													Spacing="12"
+													VerticalAlignment="Center">
+											<StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+												<TextBlock x:Name="InstructionFqdnSearchSummaryText"
+														   Text="Showing 0 results"
+														   FontSize="11"
+														   Opacity="0.8"
+														   VerticalAlignment="Center" />
+												<Button x:Name="InstructionFqdnPrevButton"
+														Content="Previous"
+														Click="OnInstructionFqdnPrevClicked"
+														IsEnabled="False" />
+												<Button x:Name="InstructionFqdnNextButton"
+														Content="Next"
+														Click="OnInstructionFqdnNextClicked"
+														IsEnabled="False" />
+											</StackPanel>
+
+											<!-- FQDN / Primary User radios live here (this is what we hide in MG mode) -->
+											<StackPanel x:Name="SearchByRadiosPanel"
+														Orientation="Horizontal"
+														Spacing="12"
+														VerticalAlignment="Center">
+
+												<TextBlock Text="Search by:" VerticalAlignment="Center" />
+
+												<RadioButton x:Name="SearchByFqdnRadioButton"
+															 Content="FQDN"
+															 GroupName="InstructionFqdnSearchMode"
+															 IsChecked="True" />
+
+												<RadioButton x:Name="SearchByPrimaryUserRadioButton"
+															 Content="Primary User"
+															 GroupName="InstructionFqdnSearchMode" />
+											</StackPanel>
+
+											<!-- MG AND/OR toggle lives here (this is what we show only in MG mode) -->
+											<StackPanel x:Name="MgmtGroupJoinModePanel"
+														Orientation="Horizontal"
+														Spacing="10"
+														Margin="10,0,0,0"
+														IsVisible="False">
+
+												<TextBlock Text="Join Multiple MGs:" VerticalAlignment="Center"/>
+
+												<RadioButton x:Name="MgmtGroupAndRadioButton"
+															 Content="AND"
+															 GroupName="MgmtGroupJoinMode"
+															 IsChecked="True"
+															 VerticalAlignment="Center" />
+
+												<RadioButton x:Name="MgmtGroupOrRadioButton"
+															 Content="OR"
+															 GroupName="MgmtGroupJoinMode"
+															 VerticalAlignment="Center" />
+											</StackPanel>
+
+										</StackPanel>
+									</Grid>
+								</Border>
+
+								<Grid Grid.Row="2"
+									  ColumnDefinitions="1.6*,1.2*"
+									  ColumnSpacing="16"
+									  RowDefinitions="Auto,*">
+
+									<Grid Grid.Row="0"
+										  Grid.Column="0"
+										  RowDefinitions="Auto,Auto"
+										  RowSpacing="2"
+										  Margin="0,0,0,6">
+
+										<Grid Grid.Row="1"
+											  ColumnDefinitions="12,*,180"
+											  ColumnSpacing="8">
+											<Border Grid.Column="0" Background="Transparent"/>
+											<TextBlock x:Name="TargetResultsHeader1"
+													   Grid.Column="1"
+													   Text="FQDN"
+													   FontWeight="Bold"
+													   Foreground="{DynamicResource ThemeForegroundBrush}" />
+											<TextBlock x:Name="TargetResultsHeader2"
+													   Grid.Column="2"
+													   Text="Primary User"
+													   FontWeight="Bold"
+													   Foreground="{DynamicResource ThemeForegroundBrush}" />
+										</Grid>
+									</Grid>
+
+									<Grid Grid.Row="0"
+										  Grid.Column="1"
+										  ColumnDefinitions="*,Auto"
+										  Margin="0,0,0,6">
+										<TextBlock Grid.Column="0"
+												   Text="Selected Targets"
+												   FontWeight="Bold"
+												   FontSize="16"
+												   VerticalAlignment="Center" />
+										<TextBlock Grid.Column="1"
+												   x:Name="FqdnManagerSelectedHeaderText"
+												   Text="Selected FQDNs (0 / 10)"
+												   Opacity="0.85"
+												   VerticalAlignment="Center"
+												   HorizontalAlignment="Right" />
+									</Grid>
+
+									<Border x:Name="InstructionFqdnSearchResultsBorder"
+											Grid.Row="1"
+											Grid.Column="0"
+											BorderThickness="1"
+											BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+											CornerRadius="4"
+											Padding="0"
+											Background="{DynamicResource ThemeControlBackgroundBrush}"
+											IsVisible="True">
+										<ScrollViewer VerticalScrollBarVisibility="Auto"
+													  Height="250">
+											<ListBox x:Name="InstructionFqdnSearchResults"
+													 SelectionMode="Multiple"
+													 SelectionChanged="InstructionFqdnSearchResults_SelectionChanged">
+												<ListBox.ItemTemplate>
+													<DataTemplate>
+														<Grid ColumnDefinitions="12,*,200"
+															  ColumnSpacing="8"
+															  Margin="4,1">
+															<Ellipse Grid.Column="0"
+																	 Width="8"
+																	 Height="8"
+																	 VerticalAlignment="Center"
+																	 Fill="{Binding StatusBrush}" />
+															<TextBlock Grid.Column="1"
+																	   Text="{Binding Fqdn}"
+																	   FontSize="11"
+																	   VerticalAlignment="Center"
+																	   TextTrimming="CharacterEllipsis"
+																	   ToolTip.Tip="{Binding Fqdn}" />
+															<TextBlock Grid.Column="2"
+																	   Text="{Binding PrimaryUser}"
+																	   FontSize="11"
+																	   VerticalAlignment="Center"
+																	   TextTrimming="CharacterEllipsis"
+																	   ToolTip.Tip="{Binding PrimaryUser}" />
+														</Grid>
+													</DataTemplate>
+												</ListBox.ItemTemplate>
+											</ListBox>
+										</ScrollViewer>
+									</Border>
+
+									<Border x:Name="FqdnManagerBorder"
+											Grid.Row="1"
+											Grid.Column="1"
+											Background="{DynamicResource ThemeNotificationBackground}"
+											Padding="12"
+											IsVisible="True"
+											BorderBrush="{DynamicResource ThemeAccentColor}"
+											BorderThickness="1"
+											CornerRadius="6">
+										<ListBox x:Name="FqdnManagerSelectedListBox"
+												 Height="250">
+											<ListBox.ItemTemplate>
+												<DataTemplate>
+													<Grid ColumnDefinitions="*,Auto"
+														  Margin="0,2">
+														<TextBlock Grid.Column="0"
+																   Text="{Binding}"
+																   FontSize="11"
+																   TextTrimming="CharacterEllipsis"
+																   VerticalAlignment="Center"
+																   ToolTip.Tip="{Binding}" />
+														<Button Grid.Column="1"
+																Content="Remove"
+																Tag="{Binding}"
+																Click="OnRemoveSelectedFqdnClicked"
+																Margin="8,0,0,0" />
+													</Grid>
+												</DataTemplate>
+											</ListBox.ItemTemplate>
+										</ListBox>
+									</Border>
+								</Grid>
+
+								<StackPanel Grid.Row="3"
+											Orientation="Horizontal"
+											HorizontalAlignment="Right"
+											Spacing="8"
+											Margin="0,2,0,0">
+									<Button Content="Clear"
+											Width="100"
+											Click="OnClearSelectedFqdnsClicked" />
+									<Button Content="Cancel"
+											Width="100"
+											Click="OnCancelSelectedFqdnsClicked" />
+								</StackPanel>
+							</Grid>
+						</StackPanel>
+					</ScrollViewer>
+				</TabItem>
+
+				<TabItem Header="Instruction History" IsTabStop="True">
+					<Grid Margin="16" RowDefinitions="Auto,Auto,Auto,*">
+						<StackPanel Orientation="Horizontal" Spacing="12" Grid.Row="0" HorizontalAlignment="Stretch">
+							<Button x:Name="RefreshHistoryButton" TabIndex="31" Content="Refresh History" Width="160" />
+							<ComboBox x:Name="StatusFilterComboBox" TabIndex="32" Width="160">
+								<ComboBoxItem Content="All Statuses" IsSelected="True" />
+								<ComboBoxItem Content="In Progress" />
+								<ComboBoxItem Content="Cancelling Responses still Available" />
+								<ComboBoxItem Content="Completed" />
+								<ComboBoxItem Content="Failed" />
+							</ComboBox>
+
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+								<Button x:Name="RerunInstructionButton" TabIndex="33" Content="Rerun" Width="100" Click="RerunInstructionButton_Click" />
+								<Button x:Name="CancelInstructionButton" TabIndex="34" Content="Cancel" Width="100" />
+							</StackPanel>
+						</StackPanel>
+
+						<StackPanel Orientation="Horizontal" Spacing="12" Grid.Row="1" HorizontalAlignment="Stretch">
+							<DatePicker x:Name="HistoryDatePicker"
+										TabIndex="35"
+										SelectedDateChanged="HistoryDatePicker_SelectedDateChanged"
+										HorizontalAlignment="Left"
+										Margin="0,0,0,8"
+										Width="280" />
+							<Button x:Name="TodayButton" TabIndex="36" Content="Today" Width="100" Click="TodayButton_Click" />
+						</StackPanel>
+
+						<Border Grid.Row="2"
+								Background="{DynamicResource ThemeNotificationBackground}"
+								Padding="10"
+								Margin="0,6,0,10"
+								IsVisible="{Binding IsVisible, ElementName=NotificationPanel}">
+							<StackPanel x:Name="NotificationPanel" Spacing="6">
+								<TextBlock Text="🔔 Pending Approvals:"
+										   FontWeight="Bold"
+										   Foreground="{DynamicResource ThemeAccentColor}" />
+
+								<ListBox x:Name="NotificationList" SelectionChanged="NotificationList_SelectionChanged">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<StackPanel Spacing="6" Margin="0,0,0,6">
+												<TextBlock Text="{Binding InstructionName}"
+														   FontWeight="Bold"
+														   Foreground="{DynamicResource  SystemControlForegroundBaseHighBrush	}" />
+
+												<TextBlock Text="{Binding CreatedTimestampUtc}"
+														   FontSize="11"
+														   Foreground="{DynamicResource  SystemControlForegroundBaseHighBrush}" />
+
+												<StackPanel Spacing="4">
+													<Grid Width="200" Height="14" Margin="0,4,0,0" HorizontalAlignment="Left">
+														<ProgressBar Minimum="0"
+																	 Maximum="100"
+																	 Value="{Binding TargetingPercent}"
+																	 Foreground="{Binding SignalBrush}"
+																	 Background="{DynamicResource ThemeProgressBackground}"
+																	 CornerRadius="4" />
+														<TextBlock Text="{Binding TargetingPercentDisplay}"
+																   HorizontalAlignment="Right"
+																   VerticalAlignment="Center"
+																   FontSize="11"
+																   FontWeight="Bold"
+																   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+													</Grid>
+
+													<TextBlock Text="{Binding TargetingSeverity}"
+															   FontSize="12"
+															   FontWeight="SemiBold"
+															   Foreground="{Binding SignalBrush}"
+															   Margin="4,0,0,0"/>
+												</StackPanel>
+
+												<TextBlock Text="{Binding TargetingSummary}"
+														   FontSize="11"
+														   FontStyle="Italic"
+														   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+
+												<TextBlock Text="{Binding TotalOnlineDisplay}"
+														   FontSize="11"
+														   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+
+												<TextBlock Text="{Binding TargetedOnlineDisplay}"
+														   FontSize="11"
+														   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+
+												<StackPanel Orientation="Horizontal"
+															Spacing="6"
+															Margin="0,6,0,0"
+															IsVisible="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}">
+													<Button Content="Approve" Click="OnApproveClicked" />
+													<Button Content="Reject" Click="OnRejectClicked" />
+													<TextBox Width="160"
+															 Watermark="Enter comment (optional)"
+															 Text="{Binding Comment, Mode=TwoWay}"
+															 Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+												</StackPanel>
+
+												<Separator Margin="0,6"/>
+											</StackPanel>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+							</StackPanel>
+						</Border>
+
+						<ListBox x:Name="HistoryListBox" TabIndex="37" Grid.Row="3" DoubleTapped="HistoryListBox_DoubleTapped">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<StackPanel Orientation="Horizontal" Spacing="20">
+										<TextBlock Text="{Binding Id}" Width="80" />
+										<TextBlock Text="{Binding Name}" Width="300" />
+										<TextBlock Text="{Binding Created}" Width="180" />
+										<TextBlock Text="{Binding Status}" Width="160" />
+									</StackPanel>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Grid>
+				</TabItem>
+
+				<TabItem Header="Results" IsTabStop="True">
+					<Grid Margin="10"
+						  RowDefinitions="Auto,Auto,Auto,*"
+						  RowSpacing="8">
+
+						<StackPanel Grid.Row="0"
+									Orientation="Horizontal"
+									Spacing="12"
+									VerticalAlignment="Center">
+							<TextBlock Text="Export format:" Margin="0,0,6,0"/>
+							<TextBlock x:Name="DefaultExportFormatLabel" Text="(default)" FontWeight="Bold"/>
+							<Button x:Name="ExportButton" TabIndex="46" Content="Export Shown" Width="110" />
+							<Button x:Name="ExportAllButton" TabIndex="47" Content="Export All" Width="95" />
+							<CheckBox x:Name="ResultsServerFilterAllCheckBox"
+									  Content="Filter all (server)"
+									  VerticalAlignment="Center"
+									  Margin="10,0,0,0"/>
+							<Button Content="Clear Results"
+									Name="ClearResultsButton"
+									Margin="8,0,0,0"
+									HorizontalAlignment="Left"
+									Click="OnClearSelectedFqdnManagerClicked"/>
+							<Button Content="Refresh Results"
+									Name="RefreshResultsButton"
+									Margin="8,0,0,0"
+									HorizontalAlignment="Left"
+									Click="OnRefreshResultsClicked"/>
+						</StackPanel>
+
+						<Grid Grid.Row="1"
+							  RowDefinitions="Auto,Auto,Auto"
+							  RowSpacing="4">
+							<TextBlock Grid.Row="1"
+									   x:Name="ResultsStatusText"
+									   FontSize="14"
+									   FontWeight="Bold"
+									   Foreground="{DynamicResource TextBoxForegroundBrush}"
+									   Text="Status: N/A" />
+
+							<Border Grid.Row="2"
+									x:Name="ProgressSummaryBorder"
+									Padding="10,6"
+									CornerRadius="8"
+									BorderThickness="1"
+									BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+									Background="{DynamicResource TextBoxBackgroundBrush}"
+									IsVisible="False">
+
+								<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="16" RowSpacing="8">
+									<StackPanel Grid.Row="0"
+												Grid.Column="0"
+												x:Name="ProgressSummaryPanel"
+												Orientation="Vertical"
+												Spacing="2">
+
+										<TextBlock x:Name="ProgressSummaryLabel"
+												   FontWeight="Bold"
+												   Foreground="{DynamicResource TextBoxForegroundBrush}"
+												   Text="📊 Instruction Progress Summary"/>
+
+										<WrapPanel x:Name="ProgressCountsWrap"
+												   Orientation="Horizontal"
+												   HorizontalAlignment="Left"
+												   VerticalAlignment="Center"
+												   Margin="0,0,0,0">
+
+											<TextBlock Text="Online:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+											<TextBlock x:Name="ProgressOnlineValue" Text="0" FontWeight="Bold" Foreground="{DynamicResource OnlineBrush}" Margin="4,0,12,0" />
+
+											<TextBlock Text="Sent:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+											<TextBlock x:Name="ProgressSentValue" Text="0" FontWeight="Bold" Foreground="{DynamicResource EstimateBrush}" Margin="4,0,12,0" />
+
+											<TextBlock Text="Received:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+											<TextBlock x:Name="ProgressReceivedValue" Text="0" FontWeight="Bold" Foreground="{DynamicResource EstimateBrush}" Margin="4,0,12,0" />
+
+											<TextBlock Text="Outstanding:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+											<TextBlock x:Name="ProgressOutstandingValue" Text="0" FontWeight="Bold" Foreground="{DynamicResource EstimateBrush}" Margin="4,0,12,0" />
+										</WrapPanel>
+
+										<TextBlock x:Name="ProgressCountsLabel"
+												   Foreground="{DynamicResource TextBoxForegroundBrush}"
+												   TextWrapping="Wrap"
+												   IsVisible="False"
+												   Text="Online: 0, Sent: 0, Received: 0, Outstanding: 0, Success: 0, No Data: 0, Errors: 0"/>
+									</StackPanel>
+
+									<Border Grid.Row="0"
+											Grid.Column="1"
+											MinWidth="360"
+											Padding="10,6"
+											CornerRadius="8"
+											BorderThickness="1"
+											BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+											Background="{DynamicResource ThemeControlLowBrush}">
+
+										<StackPanel Spacing="2">
+											<TextBlock x:Name="ResultsContextInstructionName"
+													   Text="(instruction)"
+													   FontSize="16"
+													   FontWeight="SemiBold"
+													   Foreground="{DynamicResource TextBoxForegroundBrush}"
+													   TextTrimming="CharacterEllipsis"/>
+
+											<StackPanel Orientation="Horizontal" Spacing="6">
+												<TextBlock Text="Coverage:" Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+												<TextBlock x:Name="ResultsContextCoverage"
+														   Text="(coverage)"
+														   Foreground="{DynamicResource TextBoxForegroundBrush}"
+														   TextTrimming="CharacterEllipsis"/>
+											</StackPanel>
+
+											<StackPanel Orientation="Horizontal" Spacing="6">
+												<TextBlock Text="Results filter:" Foreground="{DynamicResource ThemeForegroundLowBrush}"/>
+												<TextBlock x:Name="ResultsContextFilters"
+														   Text="(none)"
+														   Foreground="{DynamicResource TextBoxForegroundBrush}"
+														   TextWrapping="Wrap"
+														   MaxWidth="520"/>
+											</StackPanel>
+										</StackPanel>
+									</Border>
+
+									<WrapPanel Grid.Row="1"
+											   Grid.ColumnSpan="2"
+											   Orientation="Horizontal"
+											   HorizontalAlignment="Left"
+											   VerticalAlignment="Center"
+											   Margin="0,0,0,0">
+
+										<TextBlock Text="Success:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+										<TextBlock x:Name="ProgressSuccessValue" Text="0" FontWeight="Bold" Foreground="{DynamicResource OnlineBrush}" Margin="4,0,12,0" />
+
+										<TextBlock Text="No Data:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+										<TextBlock x:Name="ProgressNoDataValue" Cursor="Hand" PointerPressed="OnNoDataClicked" Text="0" FontWeight="Bold" Foreground="{DynamicResource TextBoxForegroundBrush}" Margin="4,0,12,0" />
+
+										<TextBlock Text="Not Implemented:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+										<TextBlock x:Name="ProgressNotImplementedValue"  Cursor="Hand" PointerPressed="OnNotImplementedClicked" Text="0" FontWeight="Bold" Foreground="{DynamicResource TextBoxForegroundBrush}" Margin="4,0,12,0" />
+
+										<TextBlock Text="Errors:" Foreground="{DynamicResource TextBoxForegroundBrush}" />
+										<TextBlock x:Name="ProgressErrorsValue" Cursor="Hand" PointerPressed="OnErrorsClicked" Text="0" FontWeight="Bold" Foreground="{DynamicResource OfflineBrush}" Margin="4,0,12,0" />
+									</WrapPanel>
+								</Grid>
+							</Border>
+
+							<TextBlock Grid.Row="2"
+									   x:Name="ResultsErrorText"
+									   Foreground="{DynamicResource ErrorBrush}"
+									   FontWeight="Bold"
+									   FontSize="13"
+									   TextWrapping="Wrap"
+									   IsVisible="False"
+									   AutomationProperties.Name="Results error message" />
+						</Grid>
+
+						<Grid Grid.Row="2"
+							  ColumnDefinitions="Auto,*"
+							  ColumnSpacing="16"
+							  RowDefinitions="Auto,Auto"
+							  RowSpacing="6">
+
+							<StackPanel Grid.Row="0" Grid.Column="0"
+										Orientation="Horizontal"
+										Spacing="12"
+										VerticalAlignment="Center">
+								<RadioButton x:Name="RawViewRadioButton" TabIndex="39" Content="Raw" GroupName="ViewMode" IsChecked="True" />
+								<RadioButton x:Name="AggregatedViewRadioButton" TabIndex="40" Content="Aggregated" GroupName="ViewMode" />
+								<RadioButton x:Name="ChartViewRadioButton" TabIndex="41" Content="Chart" GroupName="ViewMode" />
+							</StackPanel>
+
+							<StackPanel Grid.Row="1" Grid.Column="0"
+										Orientation="Horizontal"
+										Spacing="10"
+										VerticalAlignment="Center">
+								<Button x:Name="ResultsPrevPageButton" Content="◀" Width="34" Height="28" />
+								<Button x:Name="ResultsNextPageButton" Content="▶" Width="34" Height="28" />
+								<TextBlock x:Name="ResultsPageInfoText" Text="Page 1" VerticalAlignment="Center" Margin="6,0,0,0"/>
+								<TextBlock Text="|" VerticalAlignment="Center" Foreground="Gray" Margin="6,0,0,0"/>
+								<TextBlock Text="Go:" VerticalAlignment="Center" Margin="6,0,0,0"/>
+								<TextBox x:Name="ResultsGoToPageTextBox" Width="60" Height="28" Watermark="#" />
+								<Button x:Name="ResultsGoToPageButton" Content="Go" Width="44" Height="28" Click="ResultsGoToPageButton_Click" />
+								<TextBlock Text="|" VerticalAlignment="Center" Foreground="Gray" Margin="6,0,6,0"/>
+								<TextBlock Text="Page size:" VerticalAlignment="Center"/>
+								<ComboBox x:Name="ResultsPageSizeCombo" Width="90" SelectedIndex="0">
+									<ComboBoxItem Content="20" />
+									<ComboBoxItem Content="50" />
+									<ComboBoxItem Content="100" />
+									<ComboBoxItem Content="200" />
+									<ComboBoxItem Content="500" />
+									<ComboBoxItem Content="1000" />
+								</ComboBox>
+							</StackPanel>
+
+							<StackPanel Grid.Row="0" Grid.Column="1"
+										Orientation="Vertical"
+										Spacing="2"
+										VerticalAlignment="Top">
+								<TextBlock x:Name="ResultsInstructionIdText" FontWeight="Bold" />
+								<TextBlock x:Name="ResultsInstructionNameText" />
+								<TextBlock x:Name="ResultsInstructionDescriptionText" TextWrapping="Wrap" />
+							</StackPanel>
+						</Grid>
+
+						<ScrollViewer Grid.Row="3"
+									  HorizontalScrollBarVisibility="Auto"
+									  VerticalScrollBarVisibility="Auto">
+							<StackPanel x:Name="ResultsPanel"
+										Orientation="Vertical"
+										HorizontalAlignment="Stretch"
+										VerticalAlignment="Stretch" />
+						</ScrollViewer>
+					</Grid>
+				</TabItem>
+			</TabControl>
+		</Grid>
+	</DockPanel>
+</Window>

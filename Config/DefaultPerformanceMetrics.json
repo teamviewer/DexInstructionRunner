@@ -1,0 +1,9 @@
+{
+  "Name": "Default Performance Metrics",
+  "Measures": [
+    "ExperienceScore",
+    "StabilityScore",
+    "PerformanceScore",
+    "ResponsivenessScore"
+  ]
+}

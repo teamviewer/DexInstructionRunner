@@ -1,0 +1,10 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DexInstructionRunner.DeviceDetailWindow"
+        Title="Device Details"
+        Width="600"
+        Height="700">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="6" x:Name="DeviceDetailPanel"/>
+  </ScrollViewer>
+</Window>

@@ -1,0 +1,35 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DexInstructionRunner.Views.InstructionAuthCodeWindow"
+        Width="400"
+        Height="200"
+        WindowStartupLocation="CenterOwner"
+        Title="Authentication Required">
+
+	<StackPanel Margin="20" Spacing="10">
+
+		<TextBlock FontSize="16"
+                   FontWeight="Bold"
+                   Text="Instruction requires authentication" />
+
+		<TextBlock Name="InstructionTextBlock"/>
+
+		<TextBox Name="CodeTextBox"
+                 Watermark="Enter authentication code"/>
+
+		<StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+
+			<Button Name="CancelButton"
+                    Content="Cancel"/>
+
+			<Button Name="SubmitButton"
+                    Content="Submit"
+                    IsDefault="True"/>
+
+		</StackPanel>
+
+	</StackPanel>
+
+</Window>

@@ -1,0 +1,90 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DexInstructionRunner.Converters"
+             x:Class="DexInstructionRunner.App">
+
+	<Application.Styles>
+		<FluentTheme />
+
+		<!-- DataGrid styles are not automatically included by FluentTheme -->
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+		<!-- Default TextBlock styling -->
+		<Style Selector="TextBlock">
+			<Setter Property="FontSize" Value="13"/>
+			<Setter Property="Margin" Value="2,0"/>
+		</Style>
+
+		<!-- 🧠 Theme-Aware Score Classes -->
+		<Style Selector="TextBlock.score-high">
+			<Setter Property="Background" Value="{DynamicResource ScoreHighBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+		</Style>
+		<Style Selector="TextBlock.score-medium">
+			<Setter Property="Background" Value="{DynamicResource ScoreGoodBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+		</Style>
+		<Style Selector="TextBlock.score-low">
+			<Setter Property="Background" Value="{DynamicResource ScoreLowBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+		</Style>
+	</Application.Styles>
+
+	<Application.Resources>
+		<ResourceDictionary>
+
+			<!-- 🎨 Score Range Colors -->
+			<Color x:Key="ScoreLowColor">#B00020</Color>
+			<Color x:Key="ScoreMediumColor">#FF6D00</Color>
+			<Color x:Key="ScoreGoodColor">#F9A825</Color>
+			<Color x:Key="ScoreHighColor">#2E7D32</Color>
+
+			<SolidColorBrush x:Key="ScoreLowBrush" Color="{DynamicResource ScoreLowColor}" />
+			<SolidColorBrush x:Key="ScoreMediumBrush" Color="{DynamicResource ScoreMediumColor}" />
+			<SolidColorBrush x:Key="ScoreGoodBrush" Color="{DynamicResource ScoreGoodColor}" />
+			<SolidColorBrush x:Key="ScoreHighBrush" Color="{DynamicResource ScoreHighColor}" />
+
+			<Color x:Key="ImpactLowColor">#FF44B300</Color>
+			<!-- green -->
+			<Color x:Key="ImpactMediumColor">#FFFFC300</Color>
+			<!-- amber -->
+			<Color x:Key="ImpactHighColor">#FFE53935</Color>
+			<!-- red -->
+
+			<SolidColorBrush x:Key="ImpactLowBrush" Color="{DynamicResource ImpactLowColor}" />
+			<SolidColorBrush x:Key="ImpactMediumBrush" Color="{DynamicResource ImpactMediumColor}" />
+			<SolidColorBrush x:Key="ImpactHighBrush" Color="{DynamicResource ImpactHighColor}" />
+
+			<!-- Theme-Aware Foreground Brush -->
+			<!-- SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource TextBlockForegroundColor}" /-->
+
+			<!-- 📊 Status Measures -->
+			<Color x:Key="EstimateColor">#F9A825</Color>
+			<Color x:Key="OnlineColor">#2E7D32</Color>
+			<Color x:Key="OfflineColor">#B00020</Color>
+
+			<SolidColorBrush x:Key="EstimateBrush" Color="{DynamicResource EstimateColor}" />
+			<SolidColorBrush x:Key="OnlineBrush" Color="{DynamicResource OnlineColor}" />
+			<SolidColorBrush x:Key="OfflineBrush" Color="{DynamicResource OfflineColor}" />
+
+			<!-- 🔁 Converters -->
+			<local:ScoreToThemeBrushConverter x:Key="ScoreToThemeBrushConverter" />
+			<local:EnabledToBackgroundConverter x:Key="EnabledToBackgroundConverter"/>
+			<local:EnabledToForegroundConverter x:Key="EnabledToForegroundConverter"/>
+
+			<!-- Settings flyout theme-aware solid backgrounds -->
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key="Light">
+					<SolidColorBrush x:Key="SettingsFlyoutBackgroundBrush" Color="#FFF7F7F7" />
+					<SolidColorBrush x:Key="SettingsFlyoutPanelBrush" Color="#FFFFFFFF" />
+				</ResourceDictionary>
+
+				<ResourceDictionary x:Key="Dark">
+					<SolidColorBrush x:Key="SettingsFlyoutBackgroundBrush" Color="#FF1E1E1E" />
+					<SolidColorBrush x:Key="SettingsFlyoutPanelBrush" Color="#FF2A2A2A" />
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

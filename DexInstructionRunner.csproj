@@ -1,0 +1,95 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+
+		<!-- Self-contained and optimized for cross-platform publishing -->
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<PublishTrimmed>false</PublishTrimmed>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<AvaloniaUseCompiledXaml>true</AvaloniaUseCompiledXaml>
+		<OutputType>WinExe</OutputType>
+
+
+		<!-- Multi-platform output -->
+		<RuntimeIdentifiers>win-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+
+		<!-- Meta -->
+		<AssemblyName>DexInstructionRunner</AssemblyName>
+		<RootNamespace>DexInstructionRunner</RootNamespace>
+		<ApplicationIcon>1E-TVCompany2.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <AvaloniaXaml Remove="Themes\**" />
+	  <Compile Remove="Themes\**" />
+	  <EmbeddedResource Remove="Themes\**" />
+	  <None Remove="Themes\**" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<!-- Avalonia core UI -->
+		<PackageReference Include="Avalonia" Version="11.3.4" />
+		<PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="11.1.1" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.3.4" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.4" />
+		<PackageReference Include="Avalonia.Labs.Controls" Version="11.3.1" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.4" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.4" />
+		<PackageReference Include="ClosedXML" Version="0.105.0" />
+		<PackageReference Include="CredentialManagement" Version="1.0.2" />
+		<PackageReference Include="JsonSerializer" Version="1.0.5" />
+		<PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.0.0-rc5.4" />
+		
+
+		<!-- Debug tools (only in Debug builds) -->
+		<PackageReference Include="Avalonia.Diagnostics" Version="11.3.4">
+			<IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+		</PackageReference>
+
+		<!-- Logging -->
+		<PackageReference Include="Serilog" Version="4.3.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+		<PackageReference Include="System.Private.Uri" Version="4.3.2" />
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.8" />
+		<PackageReference Include="System.Text.Json" Version="9.0.8" />
+
+		<!-- Auth/Websockets -->
+		<PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+		<PackageReference Include="Websocket.Client" Version="5.2.0" />
+						<!-- Config -->
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.8" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
+		
+		<!-- JSON Parsing -->
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+		<!-- Optional: ElectronNET -->
+		<PackageReference Include="ElectronNET.API" Version="23.6.2" />
+	</ItemGroup>
+
+
+
+	<ItemGroup>
+	  <Content Include="1E-TVCompany2.ico" />
+	  <Content Include="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Always copy appsettings.json -->
+		<None Update="DexInstructionRunner.app\Contents\Resources\Icons\TeamViewer1E.icns">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+</Project>
